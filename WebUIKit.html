@@ -1,5 +1,8 @@
 <html>
 <head>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
   <style>
     body {
       margin: 0;
@@ -36,7 +39,11 @@
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
-      min-width: 220px;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn-instant {
@@ -104,6 +111,9 @@
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     #joinScreen button:hover {
@@ -120,19 +130,25 @@
 
 <body>
   <div id="controls">
-    <h1>🎥 ZegoCloud Video Conference</h1>
-    <button class="btn btn-instant" onclick="createInstantMeeting()">🚀 Create Instant Meeting</button>
-    <button class="btn btn-schedule" onclick="createScheduledMeeting()">📅 Create Meeting for Later</button>
+    <h1><i class="bi bi-camera-video-fill"></i> ZegoCloud Video Conference</h1>
+    <button class="btn btn-instant" onclick="createInstantMeeting()">
+      <i class="bi bi-lightning-charge-fill"></i> Create Instant Meeting
+    </button>
+    <button class="btn btn-schedule" onclick="createScheduledMeeting()">
+      <i class="bi bi-calendar-event-fill"></i> Create Meeting for Later
+    </button>
     <div id="linkBox">
-      <p>📌 Share this meeting link:</p>
+      <p><i class="bi bi-link-45deg"></i> Share this meeting link:</p>
       <a id="meetingLink" href="#" target="_blank"></a>
     </div>
   </div>
 
   <div id="joinScreen">
-    <h2>Enter Your Name</h2>
+    <h2><i class="bi bi-person-circle"></i> Enter Your Name</h2>
     <input type="text" id="userNameInput" placeholder="Your name" />
-    <button onclick="joinMeeting()">Join Meeting</button>
+    <button onclick="joinMeeting()">
+      <i class="bi bi-door-open-fill"></i> Join Meeting
+    </button>
   </div>
 
   <div id="root"></div>
