@@ -1,0 +1,124 @@
+<html>
+<head>
+  <style>
+    #root {
+      width: 100vw;
+      height: 100vh;
+    }
+    #controls {
+      margin: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    #linkBox {
+      margin-top: 15px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="controls">
+    <button onclick="createInstantMeeting()">🚀 Create Instant Meeting</button>
+    <button onclick="createScheduledMeeting()">📅 Create Meeting for Later</button>
+    <div id="linkBox">
+      <p>Share this meeting link:</p>
+      <a id="meetingLink" href="#" target="_blank"></a>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+  <script>
+    const appID = 1025474108;
+    const serverSecret = "e321d341195bb265a7f436b5b9296bd2";
+
+    function generateRoomID() {
+      return Math.floor(Math.random() * 10000) + "";
+    }
+
+    function createInstantMeeting() {
+      const roomID = generateRoomID();
+      const userID = Math.floor(Math.random() * 10000) + "";
+      const userName = "user_" + userID;
+
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+      );
+
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zp.joinRoom({
+        container: document.querySelector("#root"),
+        sharedLinks: [{
+          name: "Meeting Link",
+          url:
+            window.location.protocol +
+            "//" +
+            window.location.host +
+            window.location.pathname +
+            "?roomID=" +
+            roomID,
+        }],
+        scenario: {
+          mode: ZegoUIKitPrebuilt.VideoConference,
+        },
+      });
+    }
+
+    function createScheduledMeeting() {
+      const roomID = generateRoomID();
+      const meetingLink =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname +
+        "?roomID=" +
+        roomID;
+
+      document.getElementById("linkBox").style.display = "block";
+      document.getElementById("meetingLink").href = meetingLink;
+      document.getElementById("meetingLink").innerText = meetingLink;
+    }
+
+    // Auto-join if a link with roomID is opened
+    window.onload = function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomID = urlParams.get("roomID");
+      if (roomID) {
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "user_" + userID;
+
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+          appID,
+          serverSecret,
+          roomID,
+          userID,
+          userName
+        );
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        zp.joinRoom({
+          container: document.querySelector("#root"),
+          sharedLinks: [{
+            name: "Meeting Link",
+            url: window.location.href,
+          }],
+          scenario: {
+            mode: ZegoUIKitPrebuilt.VideoConference,
+          },
+        });
+      }
+    };
+  </script>
+</body>
+</html>
