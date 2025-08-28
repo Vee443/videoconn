@@ -43,7 +43,6 @@
       background: #1cc88a;
       color: #fff;
     }
-
     .btn-instant:hover {
       background: #17a673;
     }
@@ -52,7 +51,6 @@
       background: #4e73df;
       color: #fff;
     }
-
     .btn-schedule:hover {
       background: #2e59d9;
     }
@@ -73,7 +71,6 @@
       font-weight: 600;
       text-decoration: none;
     }
-
     #linkBox a:hover {
       text-decoration: underline;
     }
@@ -81,6 +78,27 @@
     #root {
       flex: 1;
       background: #000;
+      display: none; /* hidden until meeting starts */
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #backHome {
+      display: none;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #f6c23e;
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    #backHome:hover {
+      background: #dda20a;
     }
   </style>
 </head>
@@ -96,12 +114,16 @@
     </div>
   </div>
 
+  <button id="backHome" onclick="goHome()">⬅ Back to Home</button>
+
   <div id="root"></div>
 
   <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
   <script>
     const appID = 1025474108;
     const serverSecret = "e321d341195bb265a7f436b5b9296bd2";
+
+    let zpInstance = null;
 
     function generateRoomID() {
       return Math.floor(Math.random() * 10000) + "";
@@ -120,14 +142,21 @@
         userName
       );
 
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
-      zp.joinRoom({
-        container: document.querySelector("#root"),
+      // Hide controls, show full-screen meeting
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("backHome").style.display = "block";
+      const rootEl = document.getElementById("root");
+      rootEl.style.display = "block";
+
+      zpInstance = ZegoUIKitPrebuilt.create(kitToken);
+      zpInstance.joinRoom({
+        container: rootEl,
         sharedLinks: [{
           name: "Meeting Link",
           url: window.location.origin + window.location.pathname + "?roomID=" + roomID,
         }],
         scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
+        onLeaveRoom: () => goHome()
       });
     }
 
@@ -138,6 +167,17 @@
       document.getElementById("linkBox").style.display = "block";
       document.getElementById("meetingLink").href = meetingLink;
       document.getElementById("meetingLink").innerText = meetingLink;
+    }
+
+    function goHome() {
+      // Destroy Zego instance if exists
+      if (zpInstance) {
+        try { zpInstance.destroy(); } catch (e) {}
+        zpInstance = null;
+      }
+      document.getElementById("root").style.display = "none";
+      document.getElementById("backHome").style.display = "none";
+      document.getElementById("controls").style.display = "flex";
     }
 
     // Auto-join if a link with roomID is opened
@@ -156,11 +196,17 @@
           userName
         );
 
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-        zp.joinRoom({
-          container: document.querySelector("#root"),
+        document.getElementById("controls").style.display = "none";
+        document.getElementById("backHome").style.display = "block";
+        const rootEl = document.getElementById("root");
+        rootEl.style.display = "block";
+
+        zpInstance = ZegoUIKitPrebuilt.create(kitToken);
+        zpInstance.joinRoom({
+          container: rootEl,
           sharedLinks: [{ name: "Meeting Link", url: window.location.href }],
           scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
+          onLeaveRoom: () => goHome()
         });
       }
     };
