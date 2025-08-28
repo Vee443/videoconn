@@ -1,22 +1,118 @@
 <html>
 <head>
   <style>
-    #root {
-      width: 100vw;
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #4e73df, #1cc88a);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
     }
+
     #controls {
-      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
     }
-    button {
-      padding: 10px 15px;
-      margin-right: 10px;
+
+    #controls h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 220px;
+    }
+
+    .btn-instant {
+      background: #1cc88a;
+      color: #fff;
+    }
+    .btn-instant:hover {
+      background: #17a673;
+    }
+
+    .btn-schedule {
+      background: #4e73df;
+      color: #fff;
+    }
+    .btn-schedule:hover {
+      background: #2e59d9;
+    }
+
+    #linkBox {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      display: none;
+      word-break: break-word;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    #linkBox a {
+      color: #ffdd57;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    #linkBox a:hover {
+      text-decoration: underline;
+    }
+
+    #joinScreen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    #joinScreen input {
+      padding: 12px;
+      margin: 10px 0;
+      width: 250px;
+      border-radius: 6px;
+      border: none;
       font-size: 16px;
     }
-    #linkBox {
-      margin-top: 15px;
-      padding: 10px;
-      border: 1px solid #ccc;
+
+    #joinScreen button {
+      background: #f6c23e;
+      color: #000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #joinScreen button:hover {
+      background: #dda20a;
+    }
+
+    #root {
+      flex: 1;
+      background: #000;
       display: none;
     }
   </style>
@@ -24,12 +120,19 @@
 
 <body>
   <div id="controls">
-    <button onclick="createInstantMeeting()">🚀 Create Instant Meeting</button>
-    <button onclick="createScheduledMeeting()">📅 Create Meeting for Later</button>
+    <h1>🎥 ZegoCloud Video Conference</h1>
+    <button class="btn btn-instant" onclick="createInstantMeeting()">🚀 Create Instant Meeting</button>
+    <button class="btn btn-schedule" onclick="createScheduledMeeting()">📅 Create Meeting for Later</button>
     <div id="linkBox">
-      <p>Share this meeting link:</p>
+      <p>📌 Share this meeting link:</p>
       <a id="meetingLink" href="#" target="_blank"></a>
     </div>
+  </div>
+
+  <div id="joinScreen">
+    <h2>Enter Your Name</h2>
+    <input type="text" id="userNameInput" placeholder="Your name" />
+    <button onclick="joinMeeting()">Join Meeting</button>
   </div>
 
   <div id="root"></div>
@@ -39,84 +142,66 @@
     const appID = 1025474108;
     const serverSecret = "e321d341195bb265a7f436b5b9296bd2";
 
+    let currentRoomID = null;
+
     function generateRoomID() {
       return Math.floor(Math.random() * 10000) + "";
     }
 
     function createInstantMeeting() {
-      const roomID = generateRoomID();
-      const userID = Math.floor(Math.random() * 10000) + "";
-      const userName = "user_" + userID;
-
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appID,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-      );
-
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
-      zp.joinRoom({
-        container: document.querySelector("#root"),
-        sharedLinks: [{
-          name: "Meeting Link",
-          url:
-            window.location.protocol +
-            "//" +
-            window.location.host +
-            window.location.pathname +
-            "?roomID=" +
-            roomID,
-        }],
-        scenario: {
-          mode: ZegoUIKitPrebuilt.VideoConference,
-        },
-      });
+      currentRoomID = generateRoomID();
+      showJoinScreen();
     }
 
     function createScheduledMeeting() {
       const roomID = generateRoomID();
-      const meetingLink =
-        window.location.protocol +
-        "//" +
-        window.location.host +
-        window.location.pathname +
-        "?roomID=" +
-        roomID;
+      const meetingLink = window.location.origin + window.location.pathname + "?roomID=" + roomID;
 
       document.getElementById("linkBox").style.display = "block";
       document.getElementById("meetingLink").href = meetingLink;
       document.getElementById("meetingLink").innerText = meetingLink;
     }
 
-    // Auto-join if a link with roomID is opened
+    function showJoinScreen() {
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("joinScreen").style.display = "flex";
+    }
+
+    function joinMeeting() {
+      const userName = document.getElementById("userNameInput").value || "Guest";
+      const userID = Math.floor(Math.random() * 10000) + "";
+
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appID,
+        serverSecret,
+        currentRoomID,
+        userID,
+        userName
+      );
+
+      document.getElementById("joinScreen").style.display = "none";
+      document.getElementById("root").style.display = "block";
+
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zp.joinRoom({
+        container: document.querySelector("#root"),
+        sharedLinks: [
+          {
+            name: "Meeting Link",
+            url: window.location.origin + window.location.pathname + "?roomID=" + currentRoomID,
+          },
+        ],
+        scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
+      });
+    }
+
+    // Auto-join if someone opens a scheduled link
     window.onload = function () {
       const urlParams = new URLSearchParams(window.location.search);
       const roomID = urlParams.get("roomID");
       if (roomID) {
-        const userID = Math.floor(Math.random() * 10000) + "";
-        const userName = "user_" + userID;
-
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-          appID,
-          serverSecret,
-          roomID,
-          userID,
-          userName
-        );
-
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-        zp.joinRoom({
-          container: document.querySelector("#root"),
-          sharedLinks: [{
-            name: "Meeting Link",
-            url: window.location.href,
-          }],
-          scenario: {
-            mode: ZegoUIKitPrebuilt.VideoConference,
-          },
-        });
+        currentRoomID = roomID;
+        showJoinScreen();
       }
     };
   </script>
